@@ -129,6 +129,7 @@ def recommend_internships(job_title, skills, city, expected_stipend, top_n=5):
         .head(top_n)
     )
     
+    # ✅ Rename and format columns
     recommendations = recommendations.rename(columns={
         "Company": "Company",
         "Internship": "Internship",
@@ -138,6 +139,14 @@ def recommend_internships(job_title, skills, city, expected_stipend, top_n=5):
         "Matched skills": "Matched skills",
         "Matched Skills List": "Matched Skills List"
     })
+
+    # Format stipend with rupee symbol and remove decimals
+    recommendations["Stipend per week"] = recommendations["Stipend per week"].apply(lambda x: f"₹{int(x)}")
+
+    # Format duration with "weeks"
+    recommendations["Internship duration (weeks)"] = recommendations["Internship duration (weeks)"].apply(
+        lambda x: f"{int(x)} weeks" if pd.notnull(x) else "Not specified"
+    )
     
     return recommendations[[
         "Company",
@@ -166,7 +175,8 @@ if st.button("Get Recommendations"):
         st.warning("⚠️ No internships match your filters. Try lowering stipend or changing city.")
     else:
         st.write("### Top 5 Recommended Internships")
-        st.dataframe(results, use_container_width=True)
+        # ✅ Remove index from display
+        st.dataframe(results.reset_index(drop=True), use_container_width=True)
         
         # Bar chart of skills matched
         fig = px.bar(
@@ -181,11 +191,12 @@ if st.button("Get Recommendations"):
         fig.update_traces(textposition="outside")
         st.plotly_chart(fig, use_container_width=True)
         
-        # Download as CSV
-        csv = results.to_csv(index=False).encode("utf-8")
+        # ✅ Download as CSV with formatting
+        csv = results.reset_index(drop=True).to_csv(index=False).encode("utf-8")
         st.download_button(
             label="⬇️ Download Results as CSV",
             data=csv,
             file_name="recommended_internships.csv",
             mime="text/csv"
         )
+
