@@ -148,7 +148,7 @@ def recommend_internships(job_title, skills, city, expected_stipend, top_n=5):
         lambda x: f"{int(x)} weeks" if pd.notnull(x) else "Not specified"
     )
     
-    return recommendations[[
+    return recommendations[[ 
         "Company",
         "Internship",
         "City",
@@ -175,8 +175,13 @@ if st.button("Get Recommendations"):
         st.warning("⚠️ No internships match your filters. Try lowering stipend or changing city.")
     else:
         st.write("### Top 5 Recommended Internships")
-        # ✅ Remove index from display
-        st.dataframe(results.reset_index(drop=True), use_container_width=True)
+        
+        # ✅ Clean table with no index visible
+        st.data_editor(
+            results,
+            use_container_width=True,
+            hide_index=True
+        )
         
         # Bar chart of skills matched
         fig = px.bar(
@@ -191,12 +196,13 @@ if st.button("Get Recommendations"):
         fig.update_traces(textposition="outside")
         st.plotly_chart(fig, use_container_width=True)
         
-        # ✅ Download as CSV with formatting
-        csv = results.reset_index(drop=True).to_csv(index=False).encode("utf-8")
+        # ✅ Download as CSV without index
+        csv = results.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="⬇️ Download Results as CSV",
             data=csv,
             file_name="recommended_internships.csv",
             mime="text/csv"
         )
+
 
